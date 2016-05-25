@@ -6,6 +6,9 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/3.4.0/lodash.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>
+<script src="libs/compass.js"></script>
+<link rel="stylesheet" type="text/css" href="css/compass.css">
+
 <script>
 var getUrlValue = function(VarSearch){
     var SearchString = window.location.search.substring(1);
@@ -42,6 +45,23 @@ CUSTOMIZE BELOW
 <title>TITLE</title>
 
 <script>
+
+var printDegree = function() {
+	if (window.DeviceOrientationEvent) {
+	  // Listen for the deviceorientation event and handle the raw data
+	  window.addEventListener('deviceorientation', function(eventData) {
+		var compassdir;
+
+		if(event.webkitCompassHeading) {
+		  // Apple works only with this, alpha doesn't work
+		  compassdir = event.webkitCompassHeading;  
+		}
+		else compassdir = event.alpha;
+		return compassdir
+	  });
+	}
+}
+
 $(function() {
 	var converter = new showdown.Converter();
 	$(".markdown").each(function(i) {
@@ -51,22 +71,72 @@ $(function() {
 	var filename = getUrlValue("filename");
 
 	$.getJSON(filename, function( json ) {
-	  console.log( "JSON Data: " + json );
+
+		console.log( "JSON Data: " + json );
+		$("#jsondump").append(json.join(", "));
+		$("#jsondump").append("<br>above was json<br>");
+
 	});
 
-	//JAVASCRIPT HERE
+	$("#jsondump").append("<br>above was fdfdjson<br>");
+
+	/*
+	setInterval(function() {
+		var pd = printDegree();
+		$("#jsondump").append(pd + "above was fdfdjson<br>");
+	}, 300); 
+	*/
+	
 });
+
+/* compass */
+$(window).load(function() {
+
+	console.log ("window loaded");
+
+	var timeoutSet = function(e, t) {
+		return setTimeout(t, e)
+	};
+	var demo = $(".demo"); 
+	var arrow = demo.find(".arrow");
+	var degval = demo.find(".degrees .value");
+
+	Compass.noSupport(function() {
+	}).needGPS(function() {
+	}).needMove(function() {
+	}).init(function(e) {
+	});
+
+	Compass.watch(function(bearing) {
+		return degval.text(Math.round(bearing)), arrow.css({
+			transform: "rotate(" + -bearing + "deg)"
+		})
+	});
+}); 
 </script>
 
 <style type="text/css">
 .centerdiv {
 }
+
 </style>
 </head>
 <body>
 <div class="flexcontainer">
 	<div class="centerdiv">
-		CENTER CONTENT
+		<div id = "jsondump"></div>
+
+		<div class="demo">
+			<div class="compass">
+				<div class="circle"></div>
+				<div class="arrow">
+					<div class="letter">N</div>
+				</div>
+				<div class="degrees"><span class="value">0</span><span class="mark">°</span>
+				</div>
+			</div>
+		</div>
+
 	</div>
 </div>
 </body>
