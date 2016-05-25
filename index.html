@@ -7,6 +7,7 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/3.4.0/lodash.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>
 <script src="libs/compass.js"></script>
+<script src="libs/chroma.min.js"></script>
 <link rel="stylesheet" type="text/css" href="css/compass.css">
 
 <script>
@@ -46,16 +47,60 @@ CUSTOMIZE BELOW
 
 <script>
 
+var DEBUG = 0;
 var degrees;
 var degreeIndex = 0;
+var courseIndex = 0;
 
+var colorSuccess = 	"#F7F600"; //magenta
+var colorNot = "#352C98"; //light pink magenta
+var colorNextButtonPress = "#3CE400";
+var colorNextButtonDontPress = "#222222";
+
+//viridis color mapping
+//from https://bids.github.io/colormap/images/screenshots/parula.png
+var viridis = ['#352C98', '#0075DC', '#00A7C6', '#27B8A0', '#CCBC53', '#FFC31B'];
+var colorScaleFunction = chroma.scale(viridis).domain([180,0]).mode('lab');
+
+
+function debugPrint(selector, string) {
+	if (DEBUG) {
+		$(selector).html(string);
+	}
+}
+
+function angleDiff(angA, angB) {
+	var diff = angA - angB;
+	diff = Math.abs((diff + 180) % 360 - 180);
+	return diff
+}
 
 function setDegree(increment) {
 	degreeIndex += increment;
-	$(".targetdegree").html("Brick #" + degreeIndex + "<br>" + degrees[degreeIndex] + "&deg;");
-	$(".target").css({
-		transform: "rotate(" + -degrees[degreeIndex] + "deg)"
-	})
+
+	var targetDegree = degrees[degreeIndex];
+
+	if (targetDegree >= 0) {
+		$(".targetdegree").html("Course #" + courseIndex + "<br>Brick #" + degreeIndex + "<br>" + targetDegree + "&deg;");
+		$(".target").css({
+			opacity: 1,
+			transform: "rotate(" + (-1 * targetDegree) + "deg)"
+		});
+		$(".targetdegree").css({
+			'background-color': 'white',
+			color: 'black'
+		})
+	} else {
+		courseIndex += 1;
+		$(".target").css({
+			opacity: 0,
+		});
+		$(".targetdegree").html("Course #" + courseIndex + "<br>NEW COURSE");
+		$(".targetdegree").css({
+			'background-color': 'black',
+			color: 'white'
+		})
+	}
 }
 
 $(function() {
@@ -99,12 +144,22 @@ $(window).load(function() {
 			transform: "rotate(" + -bearing + "deg)"
 		});
 
-		if(Math.abs(bearing - degrees[degreeIndex]) < 1.0) {
-			$(".targetdegree").css("background-color", "green")
-			$("body").css("background-color", "green")
+
+		var diff = angleDiff(bearing , degrees[degreeIndex]);
+		
+		debugPrint(".debug2", diff);
+
+		if(diff < 1.0) {
+			$(".targetdegree").css("background-color", colorSuccess);
+			$("body").css("background-color", colorSuccess);
+			$(".nextbutton").css("background-color", colorNextButtonPress);
 		} else {
-			$(".targetdegree").css("background-color", "red")
-			$("body").css("background-color", "white")
+			debugPrint(".debug", bearing + " / " + degrees[degreeIndex] + " / " + diff + " <br>");
+
+			var colorMixed = colorScaleFunction(diff);
+			$(".targetdegree").css("background-color", colorNot)
+			$("body").css("background-color", colorMixed)
+			$(".nextbutton").css("background-color", colorNextButtonDontPress);
 		}
 	});
 
@@ -120,10 +175,9 @@ body {
 }
 
 .prevbutton, .nextbutton {
-	padding: 20px;
+	position: relative;
 	text-align: center;
 	background-color: white;
-	border: 5px solid black;
 	font-weight: bold;
 	font-size: 2em;
 	margin: 10px auto;
@@ -133,27 +187,33 @@ body {
 }
 
 .prevbutton {
-	width: 10px;
-	height: 10px;
+	width: 30px;
+	background-color: gray;
+	color: white;
 }
 
 .nextbutton {
-	background-color: #2AA198;
+	color: white;
+	width: 100px;
 
 }
 
 body {
-	transition: background-color 0.5s ease;
+	transition: background-color 0.1s ease-in-out;
 }
 
 .targetdegree {
-	border: 15px solid black;
+	border: 5px solid black;
 	padding: 10px;
+	width: 150px;
+	text-align: center;
+	height: 60px;
 	margin: 20px;
 	margin-top: 100px;
 	font-weight: bold;
-	font-size: 2em;
-	transition: background-color 0.5s ease;
+	font-size: 1em;
+	transition: opacity 0.5s ease-in-out;
+	transition: background-color 0.5s ease-in-out;
 
 }
 </style>
@@ -179,6 +239,9 @@ body {
 
 		<div class = "nextbutton">&gt;</div>
 		<div class = "prevbutton">&lt;</div>
+
+		<div class="debug"></div>
+		<div class="debug2"></div>
 
 	</div>
 </div>
