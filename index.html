@@ -52,7 +52,7 @@ var degreeIndex = 0;
 
 function setDegree(increment) {
 	degreeIndex += increment;
-	$(".targetdegree").html("Brick #" + degreeIndex + "<br>" + degrees[degreeIndex]);
+	$(".targetdegree").html("Brick #" + degreeIndex + "<br>" + degrees[degreeIndex] + "&deg;");
 	$(".target").css({
 		transform: "rotate(" + -degrees[degreeIndex] + "deg)"
 	})
