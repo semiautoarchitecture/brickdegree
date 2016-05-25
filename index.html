@@ -101,8 +101,10 @@ $(window).load(function() {
 
 		if(Math.abs(bearing - degrees[degreeIndex]) < 1.0) {
 			$(".targetdegree").css("background-color", "green")
+			$("body").css("background-color", "green")
 		} else {
 			$(".targetdegree").css("background-color", "red")
+			$("body").css("background-color", "white")
 		}
 	});
 
@@ -137,14 +139,19 @@ body {
 
 }
 
+body {
+	transition: background-color 0.5s ease;
+}
 
 .targetdegree {
-	border: 15px solid pink;
+	border: 15px solid black;
 	padding: 10px;
 	margin: 20px;
 	margin-top: 100px;
 	font-weight: bold;
 	font-size: 2em;
+	transition: background-color 0.5s ease;
+
 }
 </style>
 </head>
