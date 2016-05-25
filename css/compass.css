@@ -1,3 +1,8 @@
+
+.demo {
+    position: relative;
+}
+
 .demo h1 .compass {
     background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAAAAABXZoBIAAABw0lEQVQYGV3BTUjTARzH4e+2msUEwdaLmnQLCzJ6gaBD1Ckh7R2MIIIuiQhirWGYhJRh2AvGICgrsgLBk1Bgas0gSINY6K5CUIe5Q2IkUeTv0/9l5tzzCAzf/PTE2If0DB7DQGA4JvvaztUfqT184kzz7eQPMAxkBmSGLuwOK6fi1OOpX2CGcGS7ogHlWXVsDJeAbGOZlovUvABDkOkuU4E18brJP5jgdbkKXONR9OIXEOlLQeULJGZhqzYkQTzdpTzRGBjjkm5+Q7SGtOQ6LotIOjmM5s5qUSAxi2dYju29aOq4ckKG4amSY20XenNIOQ8M33O5VrShlweVQzsLgLFFnhgaqpGvu18dLADj8rWi93XyrKdK6gAsIs/qq2i6Xp4rb+VoxEblq7yDrEGukBVLirbYWIV8+/oRnaVyPByRAp2kSrTo/EfEq1o5KFfi9+A2/RfunUPM3AtLt0Ya7F21lqzc8RkTfNpftA5SJcq36dl3TPBzcM/lvmotUxHPGCYz6NlbrHzBjbEUGMI1ejSiJcHN97/ikhkwnx6IHagskqN05+meiewCGAgMg7/pgbvtLU3N8RtPklnAcAiXUcBw/QO6SlWy+4JOZAAAAABJRU5ErkJggg==')
 }
@@ -62,6 +67,17 @@
     -moz-box-sizing: border-box;
     box-sizing: border-box
 }
+
+.demo .target {
+    background-image: url('../images/target.png');
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: 110px;
+    height: 110px;
+    background-size: 100% 100%;
+}
+
 .demo .letter {
     color: #fff;
     font-weight: bold;

@@ -46,47 +46,35 @@ CUSTOMIZE BELOW
 
 <script>
 
-var printDegree = function() {
-	if (window.DeviceOrientationEvent) {
-	  // Listen for the deviceorientation event and handle the raw data
-	  window.addEventListener('deviceorientation', function(eventData) {
-		var compassdir;
+var degrees;
+var degreeIndex = 0;
 
-		if(event.webkitCompassHeading) {
-		  // Apple works only with this, alpha doesn't work
-		  compassdir = event.webkitCompassHeading;  
-		}
-		else compassdir = event.alpha;
-		return compassdir
-	  });
-	}
+
+function setDegree(increment) {
+	degreeIndex += increment;
+	$(".targetdegree").html("Brick #" + degreeIndex + "<br>" + degrees[degreeIndex]);
+	$(".target").css({
+		transform: "rotate(" + -degrees[degreeIndex] + "deg)"
+	})
 }
 
 $(function() {
-	var converter = new showdown.Converter();
-	$(".markdown").each(function(i) {
-		$(this).html(converter.makeHtml($(this).html()));
-	});
 
 	var filename = getUrlValue("filename");
 
 	$.getJSON(filename, function( json ) {
-
-		console.log( "JSON Data: " + json );
-		$("#jsondump").append(json.join(", "));
-		$("#jsondump").append("<br>above was json<br>");
-
+		degrees = json;
+		setDegree(0);
 	});
 
-	$("#jsondump").append("<br>above was fdfdjson<br>");
+	$(".nextbutton").click(function() {
+		setDegree(1);
+	});
 
-	/*
-	setInterval(function() {
-		var pd = printDegree();
-		$("#jsondump").append(pd + "above was fdfdjson<br>");
-	}, 300); 
-	*/
-	
+	$(".prevbutton").click(function() {
+		setDegree(-1);
+	});
+
 });
 
 /* compass */
@@ -94,13 +82,11 @@ $(window).load(function() {
 
 	console.log ("window loaded");
 
-	var timeoutSet = function(e, t) {
-		return setTimeout(t, e)
-	};
 	var demo = $(".demo"); 
 	var arrow = demo.find(".arrow");
 	var degval = demo.find(".degrees .value");
-
+	
+	
 	Compass.noSupport(function() {
 	}).needGPS(function() {
 	}).needMove(function() {
@@ -108,17 +94,58 @@ $(window).load(function() {
 	});
 
 	Compass.watch(function(bearing) {
-		return degval.text(Math.round(bearing)), arrow.css({
+		degval.text(Math.round(bearing * 10 )/ 10);
+		arrow.css({
 			transform: "rotate(" + -bearing + "deg)"
-		})
+		});
+
+		if(Math.abs(bearing - degrees[degreeIndex]) < 1.0) {
+			$(".targetdegree").css("background-color", "green")
+		} else {
+			$(".targetdegree").css("background-color", "red")
+		}
 	});
+
 }); 
 </script>
 
 <style type="text/css">
+
+body { 
+	font-family: Helvetica, Arial, sans-serif;
+}
 .centerdiv {
 }
 
+.prevbutton, .nextbutton {
+	padding: 20px;
+	text-align: center;
+	background-color: white;
+	border: 5px solid black;
+	font-weight: bold;
+	font-size: 2em;
+	margin: 10px auto;
+}
+
+.prevbutton {
+	width: 10px;
+	height: 10px;
+}
+
+.nextbutton {
+	background-color: #2AA198;
+
+}
+
+
+.targetdegree {
+	border: 15px solid pink;
+	padding: 10px;
+	margin: 20px;
+	margin-top: 100px;
+	font-weight: bold;
+	font-size: 2em;
+}
 </style>
 </head>
 <body>
@@ -129,6 +156,7 @@ $(window).load(function() {
 		<div class="demo">
 			<div class="compass">
 				<div class="circle"></div>
+				<div class="target"></div>
 				<div class="arrow">
 					<div class="letter">N</div>
 				</div>
@@ -136,6 +164,11 @@ $(window).load(function() {
 				</div>
 			</div>
 		</div>
+		
+		<div class="targetdegree"></div>
+
+		<div class = "nextbutton">&gt;</div>
+		<div class = "prevbutton">&lt;</div>
 
 	</div>
 </div>
