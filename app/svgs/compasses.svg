@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="compasses" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="280 -32 1200 1200" enable-background="new 280 -32 1200 1200" xml:space="preserve">
+<path id="zone" fill="#ED8FD5" d="M885.062,941.41l-9.753,218.925c3.234,0.142,6.483,0.228,9.753,0.228s6.519-0.086,9.753-0.228
+	L885.062,941.41z"/>
+<g id="compass-l">
+	<polygon id="needle-l" fill="#76DDF0" points="884.726,5.521 770.391,569.486 855.841,990.975 885.399,1136.771 999.734,572.806 	
+		"/>
+	
+		<circle id="circle-l" fill="none" stroke="#000000" stroke-width="20.3824" stroke-miterlimit="10" cx="885.062" cy="562.939" r="587.5"/>
+</g>
+<g id="compass-m">
+	<polygon id="needle-m" fill="#769EE0" points="884.946,644.314 845.402,839.365 885.179,1035.564 924.722,840.513 	"/>
+	<circle id="circle-m" fill="none" stroke="#231F20" stroke-width="10" cx="885.062" cy="839.938" r="216.017"/>
+</g>
+<g id="compass-s">
+	<polygon id="needle-s" fill="#763ED5" points="885.038,901.314 876.624,942.817 885.087,984.564 893.502,943.06 	"/>
+	<circle id="circle-s" fill="none" stroke="#231F20" stroke-width="5" cx="885.062" cy="942.939" r="49.852"/>
+</g>
+</svg>
