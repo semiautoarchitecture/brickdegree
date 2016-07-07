@@ -4,6 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.2.3/showdown.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/3.4.0/lodash.min.js"></script>
@@ -101,7 +102,32 @@ function setDegree(increment) {
 	}
 }
 
+
+function startWebSocket() {
+
+    window.ws = new WebSocket("ws://192.168.1.36:8001/");
+
+    window.ws.onopen = function() {
+      window.ws.send("Hello Mr. Server!");
+    };
+
+    window.ws.onmessage = function (e) { 
+        console.log(e);
+        console.log(e.data); 
+    };
+
+    window.ws.onclose = function() { };
+
+}
+
+function sendMessage(msg) {
+  window.ws.send(msg);
+}
+
 $(function() {
+
+    startWebSocket();
+
 
 	var filename = getUrlValue("filename");
 
@@ -127,17 +153,13 @@ $(window).load(function() {
 	console.log ("window loaded");
 
 
-
-
     function setCompassBearing(bearing) {
-        var demo = $(".demo"); 
+
+        sendMessage(bearing);
+
         var degval = $(".degrees .value");
-        var arrow = demo.find(".arrow");
 
         degval.text(Math.round(bearing * 10 )/ 10);
-        arrow.css({
-            transform: "rotate(" + -bearing + "deg)"
-        });
 
         var svgDoc = $("#compasses")[0].contentDocument;
 
