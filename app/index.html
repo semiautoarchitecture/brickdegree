@@ -214,7 +214,9 @@ $(window).load(function() {
 
         //sendMessage(bearing);
 
-        $(".degrees.fake .value").text((360 - window.calib + Math.round(bearing * 10 )/ 10) % 360);
+        var fakebearing = (360 - window.calib + Math.round(bearing * 10 )/ 10) % 360;
+
+        $(".degrees.fake .value").text(fakebearing);
 
         $(".degrees.real .value").text(Math.round(bearing * 10 )/ 10);
 
@@ -234,13 +236,13 @@ $(window).load(function() {
         //console.log(compasses_info);
 
         $("g#compass-s", svgDoc).attr({
-            transform: "rotate(" + -bearing + " " + compasses_info.s.cx + " " + compasses_info.s.cy + ")"
+            transform: "rotate(" + -fakebearing + " " + compasses_info.s.cx + " " + compasses_info.s.cy + ")"
         });
         $("g#compass-m", svgDoc).attr({
-            transform: "rotate(" + -bearing + " " + compasses_info.m.cx + " " + compasses_info.m.cy + ")"
+            transform: "rotate(" + -fakebearing + " " + compasses_info.m.cx + " " + compasses_info.m.cy + ")"
         });
         $("g#compass-l", svgDoc).attr({
-            transform: "rotate(" + -bearing + " " + compasses_info.l.cx + " " + compasses_info.l.cy + ")"
+            transform: "rotate(" + -fakebearing + " " + compasses_info.l.cx + " " + compasses_info.l.cy + ")"
         });
 
         var diff = angleDiff(bearing , currentDegree());
