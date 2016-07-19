@@ -4,14 +4,16 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.2.3/showdown.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<!--<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.2.3/showdown.min.js"></script> -->
 <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/3.4.0/lodash.min.js"></script> -->
 <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>     -->
+<script src="libs/jquery-2.2.4.min.js"></script>
 <script src="libs/compass.js"></script>
 <script src="libs/chroma.min.js"></script>
 <link rel="stylesheet" type="text/css" href="css/compass.css">
+<link rel="stylesheet" href="https://opensource.keycdn.com/fontawesome/4.6.3/font-awesome.min.css" integrity="sha384-Wrgq82RsEean5tP3NK3zWAemiNEXofJsTwTyHmNb/iL3dP/sZJ4+7sOld1uqYJtE" crossorigin="anonymous">
+
 
 <script>
 var getUrlValue = function(VarSearch){
@@ -47,6 +49,8 @@ var angleTolerance = 1;
 //from https://bids.github.io/colormap/images/screenshots/parula.png
 var viridis = ['#352C98', '#0075DC', '#00A7C6', '#27B8A0', '#CCBC53', '#FFC31B'];
 var colorScaleFunction = chroma.scale(viridis).domain([180,0]).mode('lab');
+
+
 
 
 function debugPrint(selector, string) {
@@ -111,9 +115,17 @@ function startWebSocket() {
     console.log("We're trying to connect to " + connectionString);
 
     window.ws.onopen = function() {
- //     console.log("We successfully connected to " + connectionString);
+        console.log("We successfully connected to " + connectionString);
 //      window.ws.send("Hello Mr. Server!");
     };
+
+
+    window.ws.onerror = function (e) { 
+        console.log("Error");
+        console.log(e);
+        console.log(e.data); 
+    };
+    
 
     window.ws.onmessage = function (e) { 
         console.log(e);
@@ -130,9 +142,48 @@ function sendMessage(msg) {
   window.ws.send(msg);
 }
 
+
+function settingsToggle() {
+    console.log("settingsToggle");
+    $(".settingsMenu").slideToggle();
+}
+
 $(function() {
 
-    startWebSocket();
+    window.calib = 0;
+
+    $('.degrees.real, .settingsMenu').on('touchstart click', function(event) {    
+        event.stopPropagation();
+        event.preventDefault();
+        if(event.handled !== true) {
+
+            window.calib = window.currentBearing;
+            //settingsToggle();
+
+            event.handled = true;
+        } else {
+            return false;
+        }
+
+    });
+
+    $('.settings .button').on('touchstart click', function(event) {    
+        event.stopPropagation();
+        event.preventDefault();
+        if(event.handled !== true) {
+
+            window.calib = bearing;
+
+            event.handled = true;
+        } else {
+            return false;
+        }
+
+    });
+
+
+
+    //startWebSocket();
 
 
 	var filename = getUrlValue("filename");
@@ -161,11 +212,11 @@ $(window).load(function() {
 
     function setCompassBearing(bearing) {
 
-        sendMessage(bearing);
+        //sendMessage(bearing);
 
-        var degval = $(".degrees .value");
+        $(".degrees.fake .value").text((360 - window.calib + Math.round(bearing * 10 )/ 10) % 360);
 
-        degval.text(Math.round(bearing * 10 )/ 10);
+        $(".degrees.real .value").text(Math.round(bearing * 10 )/ 10);
 
         var svgDoc = $("#compasses")[0].contentDocument;
 
@@ -218,6 +269,7 @@ $(window).load(function() {
         window.bearing_debug = 0;
         window.setInterval(function() {
             window.bearing_debug = (window.bearing_debug + 1) % 360;
+            window.currentBearing  = window.bearing_debug;
             setCompassBearing(window.bearing_debug);
         }, 10);
 
@@ -229,6 +281,7 @@ $(window).load(function() {
 	});
 
     Compass.watch(function(bearing) {
+        window.currentBearing  = bearing
         setCompassBearing(bearing);
     });
     
@@ -239,6 +292,12 @@ $(window).load(function() {
 </head>
 <body>
 <div class="wrapper">
+<div class="settingsMenu">
+        <div class="settings">
+            <i class="button fa fa-arrow-circle-up" aria-hidden="true"></i>
+        </div>
+
+</div>
 <div class="flexcontainer noselect">
 	<div class="flashdiv"></div>
 	<div class="errordiv"><div class="errorflex"><div class="errormessage"></div></div></div>
@@ -247,14 +306,18 @@ $(window).load(function() {
 
 
         <div class="ui">
+
+
             <div class="compassframe"><object id="compasses" data="svgs/compasses.svg" type="image/svg+xml" ></object></div>
-			<div class="degrees"><span class="value">0</span><span class="mark">°</span></div>
         </div>
 		
-		<div class="targetdegree"></div>
+        <div class="degrees fake"><span class="value">0</span><span class="mark">°</span></div>
+        <div class="degrees real"><span>from north: </span><span class="value">0</span><span class="mark">°</span></div>
+<!--
+        <div class="targetdegree"></div>
 
 		<div class = "nextbutton">&gt;</div>
-<!--		<div class = "prevbutton">&lt;</div> -->
+		<div class = "prevbutton">&lt;</div> -->
 
 		<div class="debug"></div>
 		<div class="debug2"></div>
