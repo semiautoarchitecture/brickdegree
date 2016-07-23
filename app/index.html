@@ -323,9 +323,8 @@ $(window).load(function() {
         compasses_info.l.cy = $("g#compass-l circle", svgDoc).attr("cy");
 
         //console.log(compasses_info);
-        var targetfakedegree = adjustForFakeBearing(currentDegree());
         $("g#zone", svgDoc).attr({
-            transform: "rotate(" + (-1 * targetfakedegree) + " " + compasses_info.s.cx + " " + compasses_info.s.cy + ")"
+            transform: "rotate(" + (-1 * currentDegree()) + " " + compasses_info.s.cx + " " + compasses_info.s.cy + ")"
         });
 
         $("g#compass-s", svgDoc).attr({
@@ -338,7 +337,8 @@ $(window).load(function() {
             transform: "rotate(" + -fakebearing + " " + compasses_info.l.cx + " " + compasses_info.l.cy + ")"
         });
 
-        var diff = angleDiff(bearing , currentDegree());
+        var targetfakedegree = adjustForFakeBearing(currentDegree());
+        var diff = angleDiff(fakebearing , targetfakedegree);
         
         debugPrint(".debug2", diff);
 
