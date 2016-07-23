@@ -337,18 +337,11 @@ $(window).load(function() {
             transform: "rotate(" + -fakebearing + " " + compasses_info.l.cx + " " + compasses_info.l.cy + ")"
         });
 
-        var targetFakeDegree = adjustForFakeBearing(currentDegree());
-        //var diff = angleDiff(bearing , currentDegree());
-
-        /*
-        console.log("####");
-        console.log(fakebearing);
-        console.log(targetFakeDegree);
-        console.log("####"); */
-        var diff = angleDiff(fakebearing, targetFakeDegree);
+        var diff = angleDiff(fakebearing, currentDegree());
         
         debugPrint(".debug2", diff);
 
+        console.log(diff);
 
         if(diff < (angleTolerance / 2)) {
             $(".targetdegree").css("background-color", colorSuccess);
