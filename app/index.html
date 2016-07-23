@@ -11,8 +11,9 @@
 <script src="libs/jquery-2.2.4.min.js"></script>
 <script src="libs/compass.js"></script>
 <script src="libs/chroma.min.js"></script>
+<link rel="stylesheet" href="text/css" href="libs/font-awesome.min.css">
+
 <link rel="stylesheet" type="text/css" href="css/compass.css">
-<link rel="stylesheet" href="text/css" href="font-awesome.min.css">
 
 
 <script>
@@ -186,10 +187,13 @@ $(function() {
     //startWebSocket();
 
 
-	var filename = getUrlValue("filename");
+	var filename = "data/" + getUrlValue("filename");
+
+    console.log(filename);
 
 	$.getJSON(filename, function( json ) {
 		degrees = json;
+        console.log(degrees);
 		setDegree(0);
 	});
 
