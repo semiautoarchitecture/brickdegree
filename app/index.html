@@ -30,7 +30,7 @@ var getUrlValue = function(VarSearch){
 }
 </script>
 
-<title>brickdegree v2</title>
+<title>brickdegree</title>
 
 <script>
 
@@ -289,7 +289,7 @@ function roundFloat(num, decimal) {
 }
 
 function adjustForFakeBearing(bearing) {
-    var fakebearing = (360 - window.calib + bearing) % 360;
+    var fakebearing = (360 - parseFloat(window.calib) + parseFloat(bearing)) % 360;
     return fakebearing;
 }
 
@@ -337,10 +337,18 @@ $(window).load(function() {
             transform: "rotate(" + -fakebearing + " " + compasses_info.l.cx + " " + compasses_info.l.cy + ")"
         });
 
-        var targetfakedegree = adjustForFakeBearing(currentDegree());
-        var diff = angleDiff(fakebearing , targetfakedegree);
+        var targetFakeDegree = adjustForFakeBearing(currentDegree());
+        //var diff = angleDiff(bearing , currentDegree());
+
+        /*
+        console.log("####");
+        console.log(fakebearing);
+        console.log(targetFakeDegree);
+        console.log("####"); */
+        var diff = angleDiff(fakebearing, targetFakeDegree);
         
         debugPrint(".debug2", diff);
+
 
         if(diff < (angleTolerance / 2)) {
             $(".targetdegree").css("background-color", colorSuccess);
