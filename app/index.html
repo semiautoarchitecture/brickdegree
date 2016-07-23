@@ -288,6 +288,11 @@ function roundFloat(num, decimal) {
 //    return Math.round(num * exp) / exp * 1.0;
 }
 
+function adjustForFakeBearing(bearing) {
+    var fakebearing = (360 - window.calib + bearing) % 360;
+    return fakebearing;
+}
+
 /* compass */
 $(window).load(function() {
 
@@ -298,7 +303,7 @@ $(window).load(function() {
 
         //sendMessage(bearing);
 
-        var fakebearing = (360 - window.calib + bearing) % 360;
+        var fakebearing = adjustForFakeBearing(bearing);
 
         $(".degrees.fake .value").text(roundFloat(fakebearing, 1));
 
@@ -318,8 +323,9 @@ $(window).load(function() {
         compasses_info.l.cy = $("g#compass-l circle", svgDoc).attr("cy");
 
         //console.log(compasses_info);
+        var targetfakedegree = adjustForFakeBearing(currentDegree());
         $("g#zone", svgDoc).attr({
-            transform: "rotate(" + (-1 * currentDegree()) + " " + compasses_info.s.cx + " " + compasses_info.s.cy + ")"
+            transform: "rotate(" + (-1 * targetfakedegree) + " " + compasses_info.s.cx + " " + compasses_info.s.cy + ")"
         });
 
         $("g#compass-s", svgDoc).attr({
