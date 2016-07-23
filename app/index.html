@@ -40,9 +40,9 @@ var degreeIndex = 0;
 var courseIndex = 0;
 var brickIndex = 0;
 
-var colorSuccess = 	"#F7F600"; 
+var colorSuccess = 	"#09DB10";
 var colorNot = "#0075DC";
-var colorNextButtonPress = "#3CE400";
+var colorNextButtonPress = "#25D6FA";
 var colorNextButtonDontPress = "#222222";
 
 var angleTolerance = 1;
@@ -111,22 +111,37 @@ function updateTargetDegree() {
     var brickN = thisDD['brickN'];
     var targetDegree = thisDD['degree'];
 
+    var svgDoc = $("#compasses")[0].contentDocument;
+    var compasses_info = {};
+    compasses_info.s = {};
+    compasses_info.s.cx = $("g#compass-s circle", svgDoc).attr("cx");
+    compasses_info.s.cy = $("g#compass-s circle", svgDoc).attr("cy");
+    compasses_info.m = {};
+    compasses_info.m.cx = $("g#compass-m circle", svgDoc).attr("cx");
+    compasses_info.m.cy = $("g#compass-m circle", svgDoc).attr("cy");
+    compasses_info.l = {};
+    compasses_info.l.cx = $("g#compass-l circle", svgDoc).attr("cx");
+    compasses_info.l.cy = $("g#compass-l circle", svgDoc).attr("cy");
+
 
 	if (targetDegree >= 0) {
         $("body").removeClass("newCourse");
-		$(".targetdegree").html(targetDegree + "&deg;<br>Course #" + courseIndex + "<br>Brick #" + brickIndex + "<br>(op" + degreeIndex + ")");
-		$(".target").css({
-			opacity: 1,
-			transform: "rotate(" + (-1 * targetDegree) + "deg)"
-		});
+        $(".targetdegree").html("<span class='targetNumber'>" + targetDegree + "&deg;</span><br>Course #" + courseIndex + ",  Brick #" + brickIndex + " ( step " + degreeIndex + " )");
+
+        console.log("FIRED");
+        console.log(targetDegree);
+        $("g#zone", svgDoc).attr({
+			"fill-opacity": 1,
+        });
+
 		$(".targetdegree").css({
 			'background-color': 'white',
 			color: 'black'
 		})
 	} else {
 
-		$(".target").css({
-			opacity: 0,
+        $("g#zone", svgDoc).attr({
+			"fill-opacity": 0,
 		});
 		$(".targetdegree").html("Course #" + courseIndex + "<br>NEW COURSE");
         $("body").addClass("newCourse");
@@ -253,6 +268,8 @@ $(function() {
         success: function(data) { processData(data); }
      });
 
+    // button handling
+
 	$(".nextbutton").click(function() {
 		incrementTargetDegreeIndex(1);
 		$(".flashdiv").fadeIn(200).fadeOut(200)
@@ -264,6 +281,13 @@ $(function() {
 
 });
 
+function roundFloat(num, decimal) {
+    return num.toFixed(decimal);
+//    var exp = Math.pow(10, decimal);
+
+//    return Math.round(num * exp) / exp * 1.0;
+}
+
 /* compass */
 $(window).load(function() {
 
@@ -274,11 +298,11 @@ $(window).load(function() {
 
         //sendMessage(bearing);
 
-        var fakebearing = (360 - window.calib + Math.round(bearing * 10 )/ 10) % 360;
+        var fakebearing = (360 - window.calib + bearing) % 360;
 
-        $(".degrees.fake .value").text(fakebearing);
+        $(".degrees.fake .value").text(roundFloat(fakebearing, 1));
 
-        $(".degrees.real .value").text(Math.round(bearing * 10 )/ 10);
+        $(".degrees.real .value").text(roundFloat(bearing, 1));
 
         var svgDoc = $("#compasses")[0].contentDocument;
 
@@ -294,6 +318,9 @@ $(window).load(function() {
         compasses_info.l.cy = $("g#compass-l circle", svgDoc).attr("cy");
 
         //console.log(compasses_info);
+        $("g#zone", svgDoc).attr({
+            transform: "rotate(" + (-1 * currentDegree()) + " " + compasses_info.s.cx + " " + compasses_info.s.cy + ")"
+        });
 
         $("g#compass-s", svgDoc).attr({
             transform: "rotate(" + -fakebearing + " " + compasses_info.s.cx + " " + compasses_info.s.cy + ")"
@@ -330,7 +357,7 @@ $(window).load(function() {
 
         window.bearing_debug = 0;
         window.setInterval(function() {
-            window.bearing_debug = (window.bearing_debug + 1) % 360;
+            window.bearing_debug = (window.bearing_debug + 0.1) % 360;
             window.currentBearing  = window.bearing_debug;
             setCompassBearing(window.bearing_debug);
         }, 10);
@@ -370,16 +397,18 @@ $(window).load(function() {
         <div class="ui">
 
 
-            <div class="compassframe"><object id="compasses" data="svgs/compasses.svg" type="image/svg+xml" ></object></div>
+            <div class="compassframe"><object id="compasses" data="svgs/compasses_2.svg" type="image/svg+xml" ></object></div>
         </div>
 		
         <div class="degrees fake"><span class="value">0</span><span class="mark">°</span></div>
-        <div class="degrees real"><span>from north: </span><span class="value">0</span><span class="mark">°</span></div>
 
         <div class="targetdegree"></div>
 
 		<div class = "nextbutton">&gt;</div>
+
+        <div class = "settingspadding"></div>
 		<div class = "prevbutton">&lt;</div> 
+        <div class="degrees real"><span>from north: </span><span class="value">0</span><span class="mark">°</span></div>
 
 		<div class="debug"></div>
 		<div class="debug2"></div>
