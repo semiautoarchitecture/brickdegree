@@ -4,14 +4,18 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.2.3/showdown.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<!--<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.2.3/showdown.min.js"></script> -->
 <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/3.4.0/lodash.min.js"></script> -->
 <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>     -->
+<script src="libs/jquery-2.2.4.min.js"></script>
 <script src="libs/compass.js"></script>
 <script src="libs/chroma.min.js"></script>
+<script src="libs/jquery.csv.min.js"></script>
+<link rel="stylesheet" href="text/css" href="libs/font-awesome.min.css">
+
 <link rel="stylesheet" type="text/css" href="css/compass.css">
+
 
 <script>
 var getUrlValue = function(VarSearch){
@@ -31,14 +35,14 @@ var getUrlValue = function(VarSearch){
 <script>
 
 var DEBUG = 0;
-var degrees;
+var degreeData;
 var degreeIndex = 0;
-var courseIndex = 1; //courses start at 1
+var courseIndex = 0;
 var brickIndex = 0;
 
-var colorSuccess = 	"#F7F600"; 
+var colorSuccess = 	"#09DB10";
 var colorNot = "#0075DC";
-var colorNextButtonPress = "#3CE400";
+var colorNextButtonPress = "#25D6FA";
 var colorNextButtonDontPress = "#222222";
 
 var angleTolerance = 1;
@@ -47,6 +51,8 @@ var angleTolerance = 1;
 //from https://bids.github.io/colormap/images/screenshots/parula.png
 var viridis = ['#352C98', '#0075DC', '#00A7C6', '#27B8A0', '#CCBC53', '#FFC31B'];
 var colorScaleFunction = chroma.scale(viridis).domain([180,0]).mode('lab');
+
+
 
 
 function debugPrint(selector, string) {
@@ -62,39 +68,83 @@ function angleDiff(angA, angB) {
 }
 
 function currentDegree() {
-    if(degrees !== undefined) {
-        return degrees[degreeIndex];
+    if(degreeData !== undefined) {
+        return degreeData[degreeIndex][2];
     } else {
         return -1;
     }
-
 }
 
-function setDegree(increment) {
+function currentDegreeData() {
+    if(degreeData !== undefined) {
+        var dd = degreeData[degreeIndex];
+        var obj = {}
+        obj['courseN'] = dd[0];
+        obj['brickN'] = dd[1];
+        obj['degree'] = dd[2];
+        return obj;
+    } else {
+        return -1;
+    }
+}
+
+function incrementTargetDegreeIndex(increment) {
 	degreeIndex += increment;
 
-    var targetDegree = currentDegree();
+    var thisDD = currentDegreeData();
+
+    var courseN = thisDD['courseN'];
+    var brickN = thisDD['brickN'];
+    var targetDegree = thisDD['degree'];
+
+    brickIndex = brickN;
+    courseIndex = courseN;
+
+    updateTargetDegree();
+} 
+
+function updateTargetDegree() {
+
+    var thisDD = currentDegreeData();
+
+    var courseN = thisDD['courseN'];
+    var brickN = thisDD['brickN'];
+    var targetDegree = thisDD['degree'];
+
+    var svgDoc = $("#compasses")[0].contentDocument;
+    var compasses_info = {};
+    compasses_info.s = {};
+    compasses_info.s.cx = $("g#compass-s circle", svgDoc).attr("cx");
+    compasses_info.s.cy = $("g#compass-s circle", svgDoc).attr("cy");
+    compasses_info.m = {};
+    compasses_info.m.cx = $("g#compass-m circle", svgDoc).attr("cx");
+    compasses_info.m.cy = $("g#compass-m circle", svgDoc).attr("cy");
+    compasses_info.l = {};
+    compasses_info.l.cx = $("g#compass-l circle", svgDoc).attr("cx");
+    compasses_info.l.cy = $("g#compass-l circle", svgDoc).attr("cy");
+
 
 	if (targetDegree >= 0) {
-		brickIndex += 1; //bricks start at 1
-		$(".targetdegree").html(targetDegree + "&deg;<br>Course #" + courseIndex + "<br>Brick #" + brickIndex + "<br>(op" + degreeIndex + ")");
-		$(".target").css({
-			opacity: 1,
-			transform: "rotate(" + (-1 * targetDegree) + "deg)"
-		});
+        $("body").removeClass("newCourse");
+        $(".targetdegree").html("<span class='targetNumber'>" + targetDegree + "&deg;</span><br>Course #" + courseIndex + ",  Brick #" + brickIndex + " ( step " + degreeIndex + " )");
+
+        console.log("FIRED");
+        console.log(targetDegree);
+        $("g#zone", svgDoc).attr({
+			"fill-opacity": 1,
+        });
+
 		$(".targetdegree").css({
 			'background-color': 'white',
 			color: 'black'
 		})
 	} else {
-		/* NEW COURSE*/
-		courseIndex += increment;
-		brickIndex = 0;
 
-		$(".target").css({
-			opacity: 0,
+        $("g#zone", svgDoc).attr({
+			"fill-opacity": 0,
 		});
 		$(".targetdegree").html("Course #" + courseIndex + "<br>NEW COURSE");
+        $("body").addClass("newCourse");
 		$(".targetdegree").css({
 			'background-color': 'black',
 			color: 'white'
@@ -111,9 +161,17 @@ function startWebSocket() {
     console.log("We're trying to connect to " + connectionString);
 
     window.ws.onopen = function() {
- //     console.log("We successfully connected to " + connectionString);
+        console.log("We successfully connected to " + connectionString);
 //      window.ws.send("Hello Mr. Server!");
     };
+
+
+    window.ws.onerror = function (e) { 
+        console.log("Error");
+        console.log(e);
+        console.log(e.data); 
+    };
+    
 
     window.ws.onmessage = function (e) { 
         console.log(e);
@@ -130,28 +188,105 @@ function sendMessage(msg) {
   window.ws.send(msg);
 }
 
+
+function settingsToggle() {
+    console.log("settingsToggle");
+    $(".settingsMenu").slideToggle();
+}
+
+function addCourseNegatives(degreeData) {
+    var currentCourse = 0;
+    var newDegreeData = [];
+
+    for (var i = 0; i < degreeData.length; i++) {
+        if(currentCourse != degreeData[i][0]) {
+            console.log("I think this is a new course " + i + " which is course " + degreeData[i][0] );
+            currentCourse = degreeData[i][0];
+            newDegreeData.push([currentCourse,-1,-1]);
+        } else {
+            newDegreeData.push(degreeData[i]);
+        }
+    }
+
+    return newDegreeData;
+}
+
+function processData(data) {
+    degreeData = $.csv.toArrays(data)
+    console.log(degreeData);
+
+    degreeData = addCourseNegatives(degreeData);
+    incrementTargetDegreeIndex(0);
+}
+
 $(function() {
 
-    startWebSocket();
+    window.calib = 0;
+
+    $('.degrees.real, .settingsMenu').on('touchstart click', function(event) {    
+        event.stopPropagation();
+        event.preventDefault();
+        if(event.handled !== true) {
+
+            window.calib = window.currentBearing;
+            //settingsToggle();
+
+            event.handled = true;
+        } else {
+            return false;
+        }
+
+    });
+
+    $('.settings .button').on('touchstart click', function(event) {    
+        event.stopPropagation();
+        event.preventDefault();
+        if(event.handled !== true) {
+
+            window.calib = bearing;
+
+            event.handled = true;
+        } else {
+            return false;
+        }
+
+    });
 
 
-	var filename = getUrlValue("filename");
 
-	$.getJSON(filename, function( json ) {
-		degrees = json;
-		setDegree(0);
-	});
+    //startWebSocket();
+
+
+	var filename =  getUrlValue("filename");
+
+    // LOAD FILE
+
+    $.ajax({
+        type: "GET",
+        url: filename,
+        dataType: "text",
+        success: function(data) { processData(data); }
+     });
+
+    // button handling
 
 	$(".nextbutton").click(function() {
-		setDegree(1);
+		incrementTargetDegreeIndex(1);
 		$(".flashdiv").fadeIn(200).fadeOut(200)
 	});
 
 	$(".prevbutton").click(function() {
-		setDegree(-1);
+		incrementTargetDegreeIndex(-1);
 	});
 
 });
+
+function roundFloat(num, decimal) {
+    return num.toFixed(decimal);
+//    var exp = Math.pow(10, decimal);
+
+//    return Math.round(num * exp) / exp * 1.0;
+}
 
 /* compass */
 $(window).load(function() {
@@ -161,11 +296,13 @@ $(window).load(function() {
 
     function setCompassBearing(bearing) {
 
-        sendMessage(bearing);
+        //sendMessage(bearing);
 
-        var degval = $(".degrees .value");
+        var fakebearing = (360 - window.calib + bearing) % 360;
 
-        degval.text(Math.round(bearing * 10 )/ 10);
+        $(".degrees.fake .value").text(roundFloat(fakebearing, 1));
+
+        $(".degrees.real .value").text(roundFloat(bearing, 1));
 
         var svgDoc = $("#compasses")[0].contentDocument;
 
@@ -181,15 +318,18 @@ $(window).load(function() {
         compasses_info.l.cy = $("g#compass-l circle", svgDoc).attr("cy");
 
         //console.log(compasses_info);
+        $("g#zone", svgDoc).attr({
+            transform: "rotate(" + (-1 * currentDegree()) + " " + compasses_info.s.cx + " " + compasses_info.s.cy + ")"
+        });
 
         $("g#compass-s", svgDoc).attr({
-            transform: "rotate(" + -bearing + " " + compasses_info.s.cx + " " + compasses_info.s.cy + ")"
+            transform: "rotate(" + -fakebearing + " " + compasses_info.s.cx + " " + compasses_info.s.cy + ")"
         });
         $("g#compass-m", svgDoc).attr({
-            transform: "rotate(" + -bearing + " " + compasses_info.m.cx + " " + compasses_info.m.cy + ")"
+            transform: "rotate(" + -fakebearing + " " + compasses_info.m.cx + " " + compasses_info.m.cy + ")"
         });
         $("g#compass-l", svgDoc).attr({
-            transform: "rotate(" + -bearing + " " + compasses_info.l.cx + " " + compasses_info.l.cy + ")"
+            transform: "rotate(" + -fakebearing + " " + compasses_info.l.cx + " " + compasses_info.l.cy + ")"
         });
 
         var diff = angleDiff(bearing , currentDegree());
@@ -217,7 +357,8 @@ $(window).load(function() {
 
         window.bearing_debug = 0;
         window.setInterval(function() {
-            window.bearing_debug = (window.bearing_debug + 1) % 360;
+            window.bearing_debug = (window.bearing_debug + 0.1) % 360;
+            window.currentBearing  = window.bearing_debug;
             setCompassBearing(window.bearing_debug);
         }, 10);
 
@@ -229,6 +370,7 @@ $(window).load(function() {
 	});
 
     Compass.watch(function(bearing) {
+        window.currentBearing  = bearing
         setCompassBearing(bearing);
     });
     
@@ -239,6 +381,12 @@ $(window).load(function() {
 </head>
 <body>
 <div class="wrapper">
+<div class="settingsMenu">
+        <div class="settings">
+            <i class="button fa fa-arrow-circle-up" aria-hidden="true"></i>
+        </div>
+
+</div>
 <div class="flexcontainer noselect">
 	<div class="flashdiv"></div>
 	<div class="errordiv"><div class="errorflex"><div class="errormessage"></div></div></div>
@@ -247,14 +395,20 @@ $(window).load(function() {
 
 
         <div class="ui">
-            <div class="compassframe"><object id="compasses" data="svgs/compasses.svg" type="image/svg+xml" ></object></div>
-			<div class="degrees"><span class="value">0</span><span class="mark">°</span></div>
+
+
+            <div class="compassframe"><object id="compasses" data="svgs/compasses_2.svg" type="image/svg+xml" ></object></div>
         </div>
 		
-		<div class="targetdegree"></div>
+        <div class="degrees fake"><span class="value">0</span><span class="mark">°</span></div>
+
+        <div class="targetdegree"></div>
 
 		<div class = "nextbutton">&gt;</div>
-<!--		<div class = "prevbutton">&lt;</div> -->
+
+        <div class = "settingspadding"></div>
+		<div class = "prevbutton">&lt;</div> 
+        <div class="degrees real"><span>from north: </span><span class="value">0</span><span class="mark">°</span></div>
 
 		<div class="debug"></div>
 		<div class="debug2"></div>
