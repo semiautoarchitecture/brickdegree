@@ -28,6 +28,8 @@ app.loadCompass = function(handler) {
 
 app.init = function() {
 
+	app.req = new REQ();
+
     // init all other libs
     ui.init();
     data.init();
@@ -42,9 +44,9 @@ app.init = function() {
     //* compass */
     $(window).load(function() {
         console.log ("window loaded");
-        app.loadCompass(function(bearing) {
-			data.setCompassBearing(bearing);
-			ui.setCompassBearing(bearing);
+        app.loadCompass(function(rawbearing) {
+			data.setCompassBearing(rawbearing);
+			ui.setCompassBearing(rawbearing);
 		});
     }); 
 

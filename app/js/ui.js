@@ -169,15 +169,20 @@ ui.bindEvents = function() {
 	});
 
 
-	$("#qrcode").click(function() {
-		$('#qrcode-overlay').html("");
-		$('#qrcode-overlay').qrcode(window.location.href);
+	$("#qrcodetoggle").click(function() {
+		$('#qrcode-content').html("");
+		$('#qrcode-content').qrcode(window.location.href);
 		$('#qrcode-overlay').fadeIn();
 	});
 	$("#qrcode-overlay").click(function() {
 		$('#qrcode-overlay').fadeOut();
 	});
 
+	$("#urlinput").click(function() {
+        var str = prompt("Enter Bengesht-based url...", "http://8b84ab99.ngrok.io/test1");
+        app.req.url = str;
+        app.req.send();
+	});
 }
 
 

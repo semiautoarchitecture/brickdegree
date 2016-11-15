@@ -18,6 +18,7 @@
 <script src="js/websocket.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/data.js"></script>
+<script src="js/REQ.js"></script>
 <script src="js/app.js"></script>
 
 <link rel="stylesheet" href="text/css" href="libs/font-awesome.min.css">
@@ -82,13 +83,14 @@ $(function() {
 			<div class = "settingspadding"></div>
 			<div class = "prevbutton">&lt;</div> 
 			<div class="degrees raw"><span>from north: </span><span class="value">0</span><span class="mark">°</span></div>
-			<div id="qrcode">QR</div>
+			<div id="qrcodetoggle" class="togglebutton">QR</div>
+			<div id="urlinput" class="togglebutton">URL</div>
 
 			<div class="debug"></div>
 			<div class="debug2"></div>
         </div>
 
-		<div id="qrcode-overlay"></div>
+		<div id="qrcode-overlay"><div id="qrcode-content"></div></div>
 	</div>
 </div>
 </div>

@@ -71,6 +71,7 @@ data.incrementTargetDegreeIndex = function(increment) {
 data.setCompassBearing = function(rawbearing) {
     data.currentRawBearing = rawbearing;
     data.currentBearing = data.calibrateRawBearing(rawbearing);
+	app.req.setObj({'bearing': data.currentRawBearing});
 }
 
 data.init = function() {
