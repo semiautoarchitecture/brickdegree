@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
 <!--<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.2.3/showdown.min.js"></script> -->
@@ -12,23 +12,16 @@
 <script src="libs/compass.js"></script>
 <script src="libs/chroma.min.js"></script>
 <script src="libs/jquery.csv.min.js"></script>
-<link rel="stylesheet" href="text/css" href="libs/font-awesome.min.css">
 
+<script src="js/helpers.js"></script>
+<script src="js/websocket.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+
+<link rel="stylesheet" href="text/css" href="libs/font-awesome.min.css">
 <link rel="stylesheet" type="text/css" href="css/compass.css">
 
-
-<script>
-var getUrlValue = function(VarSearch){
-    var SearchString = window.location.search.substring(1);
-    var VariableArray = SearchString.split('&');
-    for(var i = 0; i < VariableArray.length; i++){
-        var KeyValuePair = VariableArray[i].split('=');
-        if(KeyValuePair[0] === VarSearch){
-            return KeyValuePair[1];
-        }
-    }
-}
-</script>
 
 <title>brickdegree</title>
 
@@ -53,336 +46,13 @@ var viridis = ['#352C98', '#0075DC', '#00A7C6', '#27B8A0', '#CCBC53', '#FFC31B']
 var colorScaleFunction = chroma.scale(viridis).domain([180,0]).mode('lab');
 
 
-
-
-function debugPrint(selector, string) {
-	if (DEBUG) {
-		$(selector).html(string);
-	}
-}
-
-function angleDiff(angA, angB) {
-	var diff = angA - angB;
-	diff = Math.abs((diff + 180) % 360 - 180);
-	return diff
-}
-
-function currentDegree() {
-    if(degreeData !== undefined) {
-        return degreeData[degreeIndex][2];
-    } else {
-        return -1;
-    }
-}
-
-function currentDegreeData() {
-    if(degreeData !== undefined) {
-        var dd = degreeData[degreeIndex];
-        var obj = {}
-        obj['courseN'] = dd[0];
-        obj['brickN'] = dd[1];
-        obj['degree'] = dd[2];
-        return obj;
-    } else {
-        return -1;
-    }
-}
-
-function incrementTargetDegreeIndex(increment) {
-	degreeIndex += increment;
-
-    var thisDD = currentDegreeData();
-
-    var courseN = thisDD['courseN'];
-    var brickN = thisDD['brickN'];
-    var targetDegree = thisDD['degree'];
-
-    brickIndex = brickN;
-    courseIndex = courseN;
-
-    updateTargetDegree();
-} 
-
-function updateTargetDegree() {
-
-    var thisDD = currentDegreeData();
-
-    var courseN = thisDD['courseN'];
-    var brickN = thisDD['brickN'];
-    var targetDegree = thisDD['degree'];
-
-    var svgDoc = $("#compasses")[0].contentDocument;
-    var compasses_info = {};
-    compasses_info.s = {};
-    compasses_info.s.cx = $("g#compass-s circle", svgDoc).attr("cx");
-    compasses_info.s.cy = $("g#compass-s circle", svgDoc).attr("cy");
-    compasses_info.m = {};
-    compasses_info.m.cx = $("g#compass-m circle", svgDoc).attr("cx");
-    compasses_info.m.cy = $("g#compass-m circle", svgDoc).attr("cy");
-    compasses_info.l = {};
-    compasses_info.l.cx = $("g#compass-l circle", svgDoc).attr("cx");
-    compasses_info.l.cy = $("g#compass-l circle", svgDoc).attr("cy");
-
-
-	if (targetDegree >= 0) {
-        $("body").removeClass("newCourse");
-        $(".targetdegree").html("<span class='targetNumber'>" + targetDegree + "&deg;</span><br>Course #" + courseIndex + ",  Brick #" + brickIndex + " ( step " + degreeIndex + " )");
-
-        console.log("FIRED");
-        console.log(targetDegree);
-        $("g#zone", svgDoc).attr({
-			"fill-opacity": 1,
-        });
-
-		$(".targetdegree").css({
-			'background-color': 'white',
-			color: 'black'
-		})
-	} else {
-
-        $("g#zone", svgDoc).attr({
-			"fill-opacity": 0,
-		});
-		$(".targetdegree").html("Course #" + courseIndex + "<br>NEW COURSE");
-        $("body").addClass("newCourse");
-		$(".targetdegree").css({
-			'background-color': 'black',
-			color: 'white'
-		})
-	}
-}
-
-
-function startWebSocket() {
-
-    //var connectionString = "ws://192.168.1.154:8001/"
-    var connectionString = "ws://192.168.1.36:9001/";
-    window.ws = new WebSocket(connectionString);
-    console.log("We're trying to connect to " + connectionString);
-
-    window.ws.onopen = function() {
-        console.log("We successfully connected to " + connectionString);
-//      window.ws.send("Hello Mr. Server!");
-    };
-
-
-    window.ws.onerror = function (e) { 
-        console.log("Error");
-        console.log(e);
-        console.log(e.data); 
-    };
-    
-
-    window.ws.onmessage = function (e) { 
-        console.log(e);
-        console.log(e.data); 
-    };
-
-    window.ws.onclose = function() { 
-        console.log ("we closed the websocket connection for some reason");
-    };
-
-}
-
-function sendMessage(msg) {
-  window.ws.send(msg);
-}
-
-
-function settingsToggle() {
-    console.log("settingsToggle");
-    $(".settingsMenu").slideToggle();
-}
-
-function addCourseNegatives(degreeData) {
-    var currentCourse = 0;
-    var newDegreeData = [];
-
-    for (var i = 0; i < degreeData.length; i++) {
-        if(currentCourse != degreeData[i][0]) {
-            console.log("I think this is a new course " + i + " which is course " + degreeData[i][0] );
-            currentCourse = degreeData[i][0];
-            newDegreeData.push([currentCourse,-1,-1]);
-        } else {
-            newDegreeData.push(degreeData[i]);
-        }
-    }
-
-    return newDegreeData;
-}
-
-function processData(data) {
-    degreeData = $.csv.toArrays(data)
-    console.log(degreeData);
-
-    degreeData = addCourseNegatives(degreeData);
-    incrementTargetDegreeIndex(0);
-}
-
 $(function() {
-
-    window.calib = 0;
-
-    $('.degrees.real, .settingsMenu').on('touchstart click', function(event) {    
-        event.stopPropagation();
-        event.preventDefault();
-        if(event.handled !== true) {
-
-            window.calib = window.currentBearing;
-            //settingsToggle();
-
-            event.handled = true;
-        } else {
-            return false;
-        }
-
-    });
-
-    $('.settings .button').on('touchstart click', function(event) {    
-        event.stopPropagation();
-        event.preventDefault();
-        if(event.handled !== true) {
-
-            window.calib = bearing;
-
-            event.handled = true;
-        } else {
-            return false;
-        }
-
-    });
-
-
-
-    //startWebSocket();
-
-
-	var filename =  getUrlValue("filename");
-
-    // LOAD FILE
-
-    $.ajax({
-        type: "GET",
-        url: filename,
-        dataType: "text",
-        success: function(data) { processData(data); }
-     });
-
-    // button handling
-
-	$(".nextbutton").click(function() {
-		incrementTargetDegreeIndex(1);
-		$(".flashdiv").fadeIn(200).fadeOut(200)
-	});
-
-	$(".prevbutton").click(function() {
-		incrementTargetDegreeIndex(-1);
-	});
-
+    app.init()
+    //websocket.startWebSocket();
 });
 
-function roundFloat(num, decimal) {
-    return num.toFixed(decimal);
-//    var exp = Math.pow(10, decimal);
-
-//    return Math.round(num * exp) / exp * 1.0;
-}
-
-function adjustForFakeBearing(bearing) {
-    var fakebearing = (360 - parseFloat(window.calib) + parseFloat(bearing)) % 360;
-    return fakebearing;
-}
-
-/* compass */
-$(window).load(function() {
-
-	console.log ("window loaded");
 
 
-    function setCompassBearing(bearing) {
-
-        //sendMessage(bearing);
-
-        var fakebearing = adjustForFakeBearing(bearing);
-
-        $(".degrees.fake .value").text(roundFloat(fakebearing, 1));
-
-        $(".degrees.real .value").text(roundFloat(bearing, 1));
-
-        var svgDoc = $("#compasses")[0].contentDocument;
-
-        var compasses_info = {};
-        compasses_info.s = {};
-        compasses_info.s.cx = $("g#compass-s circle", svgDoc).attr("cx");
-        compasses_info.s.cy = $("g#compass-s circle", svgDoc).attr("cy");
-        compasses_info.m = {};
-        compasses_info.m.cx = $("g#compass-m circle", svgDoc).attr("cx");
-        compasses_info.m.cy = $("g#compass-m circle", svgDoc).attr("cy");
-        compasses_info.l = {};
-        compasses_info.l.cx = $("g#compass-l circle", svgDoc).attr("cx");
-        compasses_info.l.cy = $("g#compass-l circle", svgDoc).attr("cy");
-
-        //console.log(compasses_info);
-        $("g#zone", svgDoc).attr({
-            transform: "rotate(" + (-1 * currentDegree()) + " " + compasses_info.s.cx + " " + compasses_info.s.cy + ")"
-        });
-
-        $("g#compass-s", svgDoc).attr({
-            transform: "rotate(" + -fakebearing + " " + compasses_info.s.cx + " " + compasses_info.s.cy + ")"
-        });
-        $("g#compass-m", svgDoc).attr({
-            transform: "rotate(" + -fakebearing + " " + compasses_info.m.cx + " " + compasses_info.m.cy + ")"
-        });
-        $("g#compass-l", svgDoc).attr({
-            transform: "rotate(" + -fakebearing + " " + compasses_info.l.cx + " " + compasses_info.l.cy + ")"
-        });
-
-        var diff = angleDiff(fakebearing, currentDegree());
-        
-        debugPrint(".debug2", diff);
-
-        console.log(diff);
-
-        if(diff < (angleTolerance / 2)) {
-            $(".targetdegree").css("background-color", colorSuccess);
-            $(".flexcontainer").css("background-color", colorSuccess);
-            $(".nextbutton").css("background-color", colorNextButtonPress);
-        } else {
-            debugPrint(".debug", bearing + " / " + currentDegree() + " / " + diff + " <br>");
-
-            var colorMixed = colorScaleFunction(diff);
-            $(".targetdegree").css("background-color", colorNot)
-            $(".flexcontainer").css("background-color", colorMixed)
-            $(".nextbutton").css("background-color", colorNextButtonDontPress);
-        }
-    }
-
-	
-	Compass.noSupport(function() {
-		$(".errormessage").html("You need to access this website on your phone.");
-        $(".errordiv").css('display', 'flex');
-
-        window.bearing_debug = 0;
-        window.setInterval(function() {
-            window.bearing_debug = (window.bearing_debug + 0.1) % 360;
-            window.currentBearing  = window.bearing_debug;
-            setCompassBearing(window.bearing_debug);
-        }, 10);
-
-	}).needGPS(function() {
-		$(".errormessage").html("You need to enable GPS or Location Services on your phone.");
-		$(".errordiv").css('display', 'flex');
-	}).needMove(function() {
-	}).init(function(e) {
-	});
-
-    Compass.watch(function(bearing) {
-        window.currentBearing  = bearing
-        setCompassBearing(bearing);
-    });
-    
-    
-}); 
 </script>
 
 </head>
@@ -401,24 +71,20 @@ $(window).load(function() {
 		<div id = "jsondump"></div>
 
 
+		<div class="compassframe"><object id="compasses" data="svgs/compasses_2.svg" type="image/svg+xml" ></object></div>
         <div class="ui">
+			<div class="degrees calib"><span class="value">0</span><span class="mark">°</span></div>
 
+			<div class="targetdegree"></div>
 
-            <div class="compassframe"><object id="compasses" data="svgs/compasses_2.svg" type="image/svg+xml" ></object></div>
+			<div class = "nextbutton">&gt;</div>
+			<div class = "settingspadding"></div>
+			<div class = "prevbutton">&lt;</div> 
+			<div class="degrees raw"><span>from north: </span><span class="value">0</span><span class="mark">°</span></div>
+
+			<div class="debug"></div>
+			<div class="debug2"></div>
         </div>
-		
-        <div class="degrees fake"><span class="value">0</span><span class="mark">°</span></div>
-
-        <div class="targetdegree"></div>
-
-		<div class = "nextbutton">&gt;</div>
-
-        <div class = "settingspadding"></div>
-		<div class = "prevbutton">&lt;</div> 
-        <div class="degrees real"><span>from north: </span><span class="value">0</span><span class="mark">°</span></div>
-
-		<div class="debug"></div>
-		<div class="debug2"></div>
 
 	</div>
 </div>
