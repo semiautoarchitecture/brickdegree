@@ -169,6 +169,14 @@ ui.bindEvents = function() {
 	});
 
 
+	$("#qrcode").click(function() {
+		$('#qrcode-overlay').html("");
+		$('#qrcode-overlay').qrcode(window.location.href);
+		$('#qrcode-overlay').fadeIn();
+	});
+	$("#qrcode-overlay").click(function() {
+		$('#qrcode-overlay').fadeOut();
+	});
 
 }
 

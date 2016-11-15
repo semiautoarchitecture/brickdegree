@@ -12,6 +12,7 @@
 <script src="libs/compass.js"></script>
 <script src="libs/chroma.min.js"></script>
 <script src="libs/jquery.csv.min.js"></script>
+<script src="libs/jquery.qrcode.min.js"></script>
 
 <script src="js/helpers.js"></script>
 <script src="js/websocket.js"></script>
@@ -81,11 +82,13 @@ $(function() {
 			<div class = "settingspadding"></div>
 			<div class = "prevbutton">&lt;</div> 
 			<div class="degrees raw"><span>from north: </span><span class="value">0</span><span class="mark">°</span></div>
+			<div id="qrcode">QR</div>
 
 			<div class="debug"></div>
 			<div class="debug2"></div>
         </div>
 
+		<div id="qrcode-overlay"></div>
 	</div>
 </div>
 </div>
